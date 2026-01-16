@@ -1,0 +1,105 @@
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    position: relative;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: var(--space-2xl);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.login-header {
+    margin-bottom: var(--space-2xl);
+}
+
+.login-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--color-golden-hour), var(--color-sage-mist));
+    border-radius: 50%;
+    color: var(--color-deep-forest);
+    margin-bottom: var(--space-lg);
+}
+
+.login-header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--color-golden-hour), var(--color-warm-cream));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-xs);
+}
+
+.login-header p {
+    color: var(--color-sage-mist);
+    font-size: 0.9rem;
+}
+
+.login-form .form-group {
+    margin-bottom: var(--space-lg);
+    text-align: left;
+}
+
+.login-form label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+    color: var(--color-sage-mist);
+    font-size: 0.9rem;
+}
+
+.password-input {
+    position: relative;
+}
+
+.password-input .input {
+    padding-right: 50px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--color-sage-mist);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.toggle-password:hover {
+    color: var(--color-golden-hour);
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-bottom: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: var(--radius-sm);
+}
+
+.login-btn {
+    width: 100%;
+}
+
+.login-hint {
+    margin-top: var(--space-xl);
+    font-size: 0.8rem;
+    color: var(--color-sage-mist);
+    opacity: 0.6;
+}

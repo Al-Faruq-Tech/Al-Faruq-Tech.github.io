@@ -1,0 +1,131 @@
+.contact-page {
+    padding-top: 100px;
+}
+
+.contact-hero {
+    text-align: center;
+    padding: var(--space-3xl) var(--space-lg) var(--space-xl);
+}
+
+.contact-hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: var(--space-md);
+    background: linear-gradient(135deg, var(--color-golden-hour), var(--color-warm-cream));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.contact-hero p {
+    font-size: 1.1rem;
+    color: var(--color-sage-mist);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--space-3xl);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Form */
+.contact-form {
+    padding: var(--space-2xl);
+}
+
+.form-group {
+    margin-bottom: var(--space-lg);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    color: var(--color-sage-mist);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.submit-btn {
+    width: 100%;
+    margin-top: var(--space-md);
+}
+
+.loading {
+    animation: pulse-glow 1s ease-in-out infinite;
+}
+
+/* Success Message */
+.success-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--color-sage-mist);
+}
+
+.success-message svg {
+    color: var(--color-sage-mist);
+    margin-bottom: var(--space-lg);
+}
+
+.success-message h3 {
+    color: var(--color-warm-cream);
+    margin-bottom: var(--space-md);
+}
+
+/* Contact Info */
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+}
+
+.contact-info h3 {
+    color: var(--color-sage-mist);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.contact-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    color: var(--color-warm-cream);
+    transition: var(--transition-fast);
+}
+
+.contact-link:hover {
+    color: var(--color-golden-hour);
+    border-color: var(--color-golden-hour);
+}
+
+.contact-note {
+    padding: var(--space-lg);
+    font-size: 0.9rem;
+    color: var(--color-sage-mist);
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-xl);
+    }
+}
