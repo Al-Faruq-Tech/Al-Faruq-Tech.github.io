@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, ThumbsUp, MessageCircle, MoreHorizontal } from 'lucide-react'
+import { Send, ThumbsUp, MessageCircle } from 'lucide-react'
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 import './Comments.css'
 
-const Comments = ({ workId }) => {
-    // Simulated comments data
-    const [comments, setComments] = useState([
+const Comments = ({ workId = 'default' }) => {
+    // Default comments (used when Supabase not configured)
+    const defaultComments = [
         {
             id: 1,
             author: "Budi Santoso",
@@ -22,12 +23,77 @@ const Comments = ({ workId }) => {
             text: "Ditunggu karya selanjutnya kak! 🔥",
             time: "5 jam yang lalu",
             likes: 3,
-            isLiked: true
+            isLiked: false
         }
-    ])
+    ]
 
+    const [comments, setComments] = useState([])
     const [newComment, setNewComment] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [loading, setLoading] = useState(true)
+
+    // Load comments from Supabase on mount
+    useEffect(() => {
+        const loadComments = async () => {
+            if (!isSupabaseConfigured) {
+                // Use localStorage fallback
+                const saved = localStorage.getItem(`comments_${workId}`)
+                if (saved) {
+                    setComments(JSON.parse(saved))
+                } else {
+                    setComments(defaultComments)
+                }
+                setLoading(false)
+                return
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('comments')
+                    .select('*')
+                    .eq('work_id', workId)
+                    .order('created_at', { ascending: false })
+
+                if (error) throw error
+
+                if (data && data.length > 0) {
+                    const formattedComments = data.map(c => ({
+                        id: c.id,
+                        author: c.author,
+                        avatar: c.author.charAt(0).toUpperCase(),
+                        text: c.text,
+                        time: formatTime(c.created_at),
+                        likes: c.likes,
+                        isLiked: localStorage.getItem(`liked_${c.id}`) === 'true'
+                    }))
+                    setComments(formattedComments)
+                } else {
+                    setComments(defaultComments)
+                }
+            } catch (error) {
+                console.error('Error loading comments:', error)
+                setComments(defaultComments)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadComments()
+    }, [workId])
+
+    const formatTime = (timestamp) => {
+        const now = new Date()
+        const commentDate = new Date(timestamp)
+        const diffMs = now - commentDate
+        const diffMins = Math.floor(diffMs / 60000)
+        const diffHours = Math.floor(diffMs / 3600000)
+        const diffDays = Math.floor(diffMs / 86400000)
+
+        if (diffMins < 1) return 'Baru saja'
+        if (diffMins < 60) return `${diffMins} menit yang lalu`
+        if (diffHours < 24) return `${diffHours} jam yang lalu`
+        return `${diffDays} hari yang lalu`
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -35,12 +101,9 @@ const Comments = ({ workId }) => {
 
         setIsSubmitting(true)
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
         const comment = {
-            id: Date.now(),
-            author: "Pengunjung", // In real app, get from auth
+            id: Date.now().toString(),
+            author: "Pengunjung",
             avatar: "P",
             text: newComment,
             time: "Baru saja",
@@ -48,22 +111,91 @@ const Comments = ({ workId }) => {
             isLiked: false
         }
 
+        // Optimistic update
         setComments([comment, ...comments])
         setNewComment('')
-        setIsSubmitting(false)
+
+        if (!isSupabaseConfigured) {
+            // Fallback: save to localStorage
+            const updatedComments = [comment, ...comments]
+            localStorage.setItem(`comments_${workId}`, JSON.stringify(updatedComments))
+            setIsSubmitting(false)
+            return
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('comments')
+                .insert({
+                    work_id: workId,
+                    author: "Pengunjung",
+                    text: newComment,
+                    likes: 0
+                })
+                .select()
+                .single()
+
+            if (error) throw error
+
+            // Update with real ID from database
+            if (data) {
+                setComments(prev => prev.map(c =>
+                    c.id === comment.id ? { ...c, id: data.id } : c
+                ))
+            }
+        } catch (error) {
+            console.error('Error saving comment:', error)
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
-    const handleLike = (id) => {
+    const handleLike = async (id) => {
+        const comment = comments.find(c => c.id === id)
+        if (!comment) return
+
+        const newLikeStatus = !comment.isLiked
+        const newLikes = newLikeStatus ? comment.likes + 1 : comment.likes - 1
+
+        // Optimistic update
         setComments(comments.map(c => {
             if (c.id === id) {
-                return {
-                    ...c,
-                    likes: c.isLiked ? c.likes - 1 : c.likes + 1,
-                    isLiked: !c.isLiked
-                }
+                return { ...c, likes: newLikes, isLiked: newLikeStatus }
             }
             return c
         }))
+
+        // Save like status to localStorage
+        localStorage.setItem(`liked_${id}`, newLikeStatus.toString())
+
+        if (!isSupabaseConfigured) {
+            // Fallback: update localStorage
+            const updatedComments = comments.map(c =>
+                c.id === id ? { ...c, likes: newLikes, isLiked: newLikeStatus } : c
+            )
+            localStorage.setItem(`comments_${workId}`, JSON.stringify(updatedComments))
+            return
+        }
+
+        try {
+            await supabase
+                .from('comments')
+                .update({ likes: newLikes })
+                .eq('id', id)
+        } catch (error) {
+            console.error('Error updating like:', error)
+        }
+    }
+
+    if (loading) {
+        return (
+            <section className="comments-section">
+                <div className="comments-header">
+                    <h3>Komentar</h3>
+                </div>
+                <div className="comments-loading">Memuat komentar...</div>
+            </section>
+        )
     }
 
     return (
